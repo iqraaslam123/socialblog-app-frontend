@@ -1,36 +1,3 @@
-// import { Link, useNavigate } from 'react-router-dom';
-// import { useAuth } from '../../context/AuthContext';
-// import { useTheme } from '../../context/ThemeContext';
-// import ThemeToggle from '../Theme/ThemeToggle';
-
-// export default function Navbar() {
-//   const { user, logout } = useAuth();
-//   const navigate = useNavigate();
-
-//   const handleLogout = () => { logout(); navigate('/login'); };
-
-//   return (
-//     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center sticky top-0 z-50">
-//       <Link to="/" className="text-xl font-bold text-blue-600 dark:text-blue-400">SocialApp</Link>
-//       <div className="flex items-center gap-4">
-//         <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-500">Home</Link>
-//         <Link to="/explore" className="text-gray-600 dark:text-gray-300 hover:text-blue-500">Explore</Link>
-//         <Link to="/messages" className="text-gray-600 dark:text-gray-300 hover:text-blue-500">Messages</Link>
-//         {user && (
-//           <Link to={`/profile/${user._id}`} className="text-gray-600 dark:text-gray-300 hover:text-blue-500">
-//             Profile
-//           </Link>
-//         )}
-//         <ThemeToggle />
-//         <button onClick={handleLogout} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
-//           Logout
-//         </button>
-//       </div>
-//     </nav>
-//   );
-// }
-
-
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
