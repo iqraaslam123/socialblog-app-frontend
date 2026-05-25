@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #8B5CF6;
+  --secondary: #6D28D9;
+  --accent: #EDE9FE;
+  --theme-bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --sidebar-bg: #ffffff;
+}
+
+.dark {
+  --theme-bg: #111111;
+  --card-bg: #1e1e1e;
+  --border: #2d2d2d;
+  --text: #f1f1f1;
+  --text-muted: #888888;
+  --sidebar-bg: #161616;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--theme-bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; opacity: 0.5; }
+
+/* ai robot animated bouncing up down */
+.robot {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
