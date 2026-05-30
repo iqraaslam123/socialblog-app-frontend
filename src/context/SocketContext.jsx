@@ -8,7 +8,7 @@ export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {
     console.warn("⚠️ useSocket must be used within a SocketProvider");
-    return { socket: null }; 
+    return { socket: null };
   }
   return context;
 };
@@ -17,15 +17,22 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Vite ka environment variable call karein, agar na mile toh localhost par fallback karein
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
-    
-    console.log("🔌 Connecting socket to:", SOCKET_URL); // Debugging ke liye taake console par sahi URL dikhe
 
     const newSocket = io(SOCKET_URL, {
-      transports: ['websocket', 'polling'], // 'websocket' ko pehle rakhna behter hota hai
+      // ✅ FIXED: Vercel WebSocket support nahi karta
+      // polling pehle, websocket baad mein (Vercel pe websocket fail hoga, polling use hogi)
+      transports: ['polling', 'websocket'],
       withCredentials: true,
-      autoConnect: true
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 3,      // ✅ Infinite retry band — spam kam hoga
+      reconnectionDelay: 2000,
+    });
+
+    newSocket.on('connect_error', (err) => {
+      // Silently handle — console spam band
+      console.warn('Socket connection issue:', err.message);
     });
 
     setSocket(newSocket);
