@@ -34,7 +34,8 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const { data } = await axios.get(`${API}/users/all-users`);
+        // ✅ FIXED: /users/all-users → /api/users/all-users
+        const { data } = await axios.get(`${API}/api/users/all-users`);
         const validUsers = data.filter(u => u && u.username && u.email);
         const sorted = validUsers.sort((a, b) => {
           if (a.email === MY_EMAIL) return -1;
@@ -70,7 +71,6 @@ export default function Sidebar() {
     }).then(r => { if (r.isConfirmed) { logout(); navigate('/login'); } });
   };
 
-  /* Edit Profile Modal (same as before) */
   const handleEditProfile = async () => {
     const aiBios = [
       "🚀 Full-Stack Architect | Building the future, one component at a time | React • Node • MongoDB",
@@ -267,10 +267,7 @@ export default function Sidebar() {
         </div>
       `,
       background: '#0a0c10',
-      backdrop: `
-        rgba(0,0,0,0.8)
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")
-      `,
+      backdrop: `rgba(0,0,0,0.8)`,
       padding: '2rem',
       showCancelButton: true,
       confirmButtonColor: 'var(--primary)',
@@ -283,12 +280,6 @@ export default function Sidebar() {
         cancelButton: 'premium-cancel-btn'
       },
       html: modalHtml,
-      showClass: {
-        popup: 'animate__animated animate__zoomIn animate__faster'
-      },
-      hideClass: {
-        popup: 'animate__animated animate__zoomOut animate__faster'
-      },
       preConfirm: () => {
         const username = document.getElementById('studio-name')?.value;
         const bio = document.getElementById('studio-bio')?.value;
@@ -302,17 +293,14 @@ export default function Sidebar() {
           Swal.showValidationMessage('❌ Username must be at least 3 characters');
           return false;
         }
-        
         if (username.length > 20) {
           Swal.showValidationMessage('❌ Username must be less than 20 characters');
           return false;
         }
-        
         if (bio && bio.length > 160) {
           Swal.showValidationMessage('❌ Bio must be 160 characters or less');
           return false;
         }
-        
         return { username, bio, badge, fileDp, github, twitter, website };
       }
     });
@@ -328,22 +316,19 @@ export default function Sidebar() {
         if (formValues.twitter) fd.append('twitter', formValues.twitter);
         if (formValues.website) fd.append('website', formValues.website);
 
-        const { data } = await axios.put(`${API}/users/me`, fd);
+        // ✅ FIXED: /users/me → /api/users/me
+        const { data } = await axios.put(`${API}/api/users/me`, fd);
         setUser(data);
         
         Swal.fire({
           title: '✨ Profile Updated!',
           text: 'Your digital identity has been transformed',
           icon: 'success',
-          showConfirmButton: true,
           confirmButtonColor: 'var(--primary)',
           background: 'var(--theme-bg)',
           color: 'var(--text-color)',
           iconColor: 'var(--primary)',
           timer: 3000,
-          showClass: {
-            popup: 'animate__animated animate__tada'
-          }
         });
       } catch (err) { 
         Swal.fire({
@@ -363,30 +348,21 @@ export default function Sidebar() {
       title: '📊 Analytics Dashboard',
       background: '#090a0f',
       color: '#fff',
-      showClass: {
-        popup: 'animate__animated animate__fadeInUp animate__faster'
-      },
       html: `
         <div style="padding: 10px;">
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-             <div style="background:linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(59,130,246,0.1) 100%); padding:25px; border-radius:20px; border:1px solid rgba(255,255,255,0.05); transition: all 0.3s;">
+             <div style="background:linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(59,130,246,0.1) 100%); padding:25px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size: 48px; margin-bottom: 10px;">👥</div>
                 <h2 style="color:var(--primary); margin:0; font-size: 36px; font-weight: 900;">${user?.followers?.length || 0}</h2>
                 <p style="color:#94a3b8; font-size:12px; margin-top: 8px; letter-spacing: 1px;">FOLLOWERS</p>
-                <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px;">
-                  <div style="width: ${Math.min((user?.followers?.length || 0) * 10, 100)}%; height: 100%; background: var(--primary); border-radius: 2px;"></div>
-                </div>
              </div>
              <div style="background:linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.1) 100%); padding:25px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size: 48px; margin-bottom: 10px;">👣</div>
                 <h2 style="color:#10b981; margin:0; font-size: 36px; font-weight: 900;">${user?.following?.length || 0}</h2>
                 <p style="color:#94a3b8; font-size:12px; margin-top: 8px; letter-spacing: 1px;">FOLLOWING</p>
-                <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px;">
-                  <div style="width: ${Math.min((user?.following?.length || 0) * 10, 100)}%; height: 100%; background: #10b981; border-radius: 2px;"></div>
-                </div>
              </div>
           </div>
-          <div style="background:rgba(255,255,255,0.02); padding: 20px; border-radius: 20px; margin-top: 10px;">
+          <div style="background:rgba(255,255,255,0.02); padding: 20px; border-radius: 20px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
               <span style="font-size: 24px;">🏆</span>
               <span style="font-weight: 800; color: #fff;">Account Milestones</span>
@@ -395,14 +371,6 @@ export default function Sidebar() {
               <div style="display: flex; justify-content: space-between; font-size: 12px;">
                 <span style="color: #94a3b8;">Member since</span>
                 <span style="color: #fff; font-weight: 700;">${user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently'}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                <span style="color: #94a3b8;">Profile views</span>
-                <span style="color: #fff; font-weight: 700;">${Math.floor(Math.random() * 1000) + 100}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                <span style="color: #94a3b8;">Content reach</span>
-                <span style="color: #fff; font-weight: 700;">${Math.floor(Math.random() * 5000) + 500}</span>
               </div>
             </div>
           </div>
@@ -442,57 +410,24 @@ export default function Sidebar() {
         animate={{ x: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={`main-responsive-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`} 
-        style={{ 
-          width: '280px', 
-          background: 'linear-gradient(180deg, #090a0f 0%, #0a0c10 100%)',
-          borderRight: '1px solid rgba(255,255,255,0.08)', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          height: '100vh', 
-          position: 'fixed', 
-          left: 0, 
-          top: 0, 
-          zIndex: 900,
-          boxShadow: '5px 0 30px rgba(0,0,0,0.3)'
-        }}
+        style={{ width: '280px', background: 'linear-gradient(180deg, #090a0f 0%, #0a0c10 100%)', borderRight: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed', left: 0, top: 0, zIndex: 900, boxShadow: '5px 0 30px rgba(0,0,0,0.3)' }}
       >
-        
-        {/* Scrollable Middle Section */}
-        <div style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          overflowX: 'hidden',
-          padding: '20px 0',
-          minHeight: 0 // Important for flex overflow
-        }} className="active-members-scrollbar">
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '20px 0', minHeight: 0 }} className="active-members-scrollbar">
           
-          {/* Logo Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ padding: '0 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 20 }}
-          >
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              style={{ fontSize: 24, fontWeight: 900, background: 'linear-gradient(135deg, var(--primary) 0%, #fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-            >
+          {/* Logo */}
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '0 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 20 }}>
+            <motion.div whileHover={{ scale: 1.05 }} style={{ fontSize: 24, fontWeight: 900, background: 'linear-gradient(135deg, var(--primary) 0%, #fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               ✦ SocialApp
             </motion.div>
             <div style={{ fontSize: 10, color: '#6b7280', marginTop: 5 }}>Premium Experience</div>
           </motion.div>
 
           {/* User Profile Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             style={{ margin: '0 16px 20px', padding: 18, borderRadius: 20, background: 'linear-gradient(135deg, rgba(18,20,28,0.95) 0%, rgba(13,14,19,0.95) 100%)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <motion.div 
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                style={{ position: 'relative' }}
-              >
+              <motion.div whileHover={{ scale: 1.05, rotate: 5 }} style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', inset: -2, background: 'linear-gradient(135deg, var(--primary), #3B82F6)', borderRadius: '50%', opacity: 0.5 }}></div>
                 <img src={avatar} style={{ position: 'relative', width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)' }} alt="avatar" />
                 <div style={{ position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, background: '#10b981', borderRadius: '50%', border: '2px solid #090a0f' }}></div>
@@ -502,52 +437,34 @@ export default function Sidebar() {
                 <div style={{ fontSize: 10, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || ''}</div>
               </div>
             </div>
-            
             {user?.bio && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{ marginTop: 12, padding: 12, background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.04)' }}
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: 12, padding: 12, background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.04)' }}>
                 <p style={{ margin: 0, fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: '1.4' }}>"{user.bio}"</p>
               </motion.div>
             )}
-            
             <div style={{ display: 'flex', gap: 10, marginTop: 15 }}>
-              <motion.button 
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={showStats} 
-                style={{ flex: 1, padding: '9px', borderRadius: 12, background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)', color: '#fff', border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}
-              >
+              <motion.button whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} onClick={showStats}
+                style={{ flex: 1, padding: '9px', borderRadius: 12, background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)', color: '#fff', border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 📊 Stats
               </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleEditProfile} 
-                style={{ flex: 1, padding: '9px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}
-              >
+              <motion.button whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} onClick={handleEditProfile}
+                style={{ flex: 1, padding: '9px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 ✏️ Edit
               </motion.button>
             </div>
           </motion.div>
 
-          {/* Search Members */}
+          {/* Search */}
           <div style={{ padding: '0 16px 15px' }}>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14 }}>🔍</div>
-              <input 
-                type="text" 
-                placeholder="Search members..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              <input type="text" placeholder="Search members..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ width: '100%', padding: '10px 10px 10px 35px', borderRadius: 12, background: '#12141c', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', fontSize: 12, outline: 'none' }}
               />
             </div>
           </div>
 
-          {/* Active Members Section */}
+          {/* Active Members */}
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px 10px' }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', letterSpacing: 1.5 }}>👥 ACTIVE MEMBERS</div>
@@ -556,31 +473,19 @@ export default function Sidebar() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               <AnimatePresence>
                 {filteredUsers.slice(0, 20).map((u, index) => (
-                  <motion.div 
-                    key={u._id || index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                  <motion.div key={u._id || index}
+                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.02 }}
                     whileHover={{ x: 5, background: 'rgba(139,92,246,0.1)' }}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 10, 
-                      padding: '8px 12px', 
-                      borderRadius: 12, 
-                      background: u.email === MY_EMAIL ? 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%)' : 'transparent',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 12, background: u.email === MY_EMAIL ? 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%)' : 'transparent', cursor: 'pointer', transition: 'all 0.3s' }}
+                    onClick={() => navigate(`/profile/${u._id}`)}
                     onMouseEnter={() => setHoveredUser(u._id)}
                     onMouseLeave={() => setHoveredUser(null)}
                   >
                     <div style={{ position: 'relative' }}>
                       <img 
                         src={u.profilePicture ? `${BASE}${u.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || 'User')}&background=${u.email === MY_EMAIL ? 'ef4444' : '8B5CF6'}&color=fff&size=24&rounded=true`} 
-                        style={{ width: 28, height: 28, borderRadius: '50%' }} 
-                        alt={u.username || 'User'} 
+                        style={{ width: 28, height: 28, borderRadius: '50%' }} alt={u.username || 'User'} 
                       />
                       <span style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, background: '#10b981', borderRadius: '50%', border: '1px solid #090a0f' }}></span>
                     </div>
@@ -592,65 +497,34 @@ export default function Sidebar() {
                 ))}
               </AnimatePresence>
               {filteredUsers.length === 0 && !loadingUsers && (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', fontSize: 12 }}>
-                  No members found
-                </div>
+                <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', fontSize: 12 }}>No members found</div>
               )}
               {loadingUsers && (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', fontSize: 12 }}>
-                  Loading members...
-                </div>
+                <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', fontSize: 12 }}>Loading members...</div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Fixed Bottom Section - Always Visible */}
-        <div style={{ 
-          padding: '16px', 
-          background: 'linear-gradient(180deg, rgba(9,10,15,0.95) 0%, #090a0f 100%)', 
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(10px)',
-          flexShrink: 0
-        }}>
+        {/* Fixed Bottom */}
+        <div style={{ padding: '16px', background: 'linear-gradient(180deg, rgba(9,10,15,0.95) 0%, #090a0f 100%)', borderTop: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', flexShrink: 0 }}>
           <div style={{ padding: 12, borderRadius: 16, background: 'rgba(18,20,28,0.8)', marginBottom: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--primary)', marginBottom: 10, textAlign: 'center', letterSpacing: 1.5 }}>🎨 THEME STUDIO</div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 10 }}>
               {themeColors.map(t => (
-                <motion.button 
-                  key={t.key} 
-                  whileHover={{ scale: 1.2, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setColor(t.key)} 
-                  style={{ 
-                    width: 28, 
-                    height: 28, 
-                    borderRadius: '50%', 
-                    background: t.hex, 
-                    border: color === t.key ? '2px solid #fff' : '1px solid rgba(255,255,255,0.2)', 
-                    cursor: 'pointer',
-                    boxShadow: color === t.key ? `0 0 0 2px ${t.hex}` : 'none'
-                  }} 
+                <motion.button key={t.key} whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 0.9 }} onClick={() => setColor(t.key)}
+                  style={{ width: 28, height: 28, borderRadius: '50%', background: t.hex, border: color === t.key ? '2px solid #fff' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', boxShadow: color === t.key ? `0 0 0 2px ${t.hex}` : 'none' }}
                   title={t.name}
                 />
               ))}
             </div>
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={toggleTheme} 
-              style={{ width: '100%', padding: '10px', borderRadius: 12, background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)', color: '#fff', border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}
-            >
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={toggleTheme}
+              style={{ width: '100%', padding: '10px', borderRadius: 12, background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)', color: '#fff', border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               {dark ? '☀️ Light Mode' : '🌙 Dark Mode'}
             </motion.button>
           </div>
-          
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleLogout} 
-            style={{ width: '100%', padding: '12px', borderRadius: 14, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.3s' }}
-          >
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleLogout}
+            style={{ width: '100%', padding: '12px', borderRadius: 14, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.3s' }}>
             🚪 Logout Session
           </motion.button>
         </div>
@@ -660,47 +534,15 @@ export default function Sidebar() {
         .active-members-scrollbar::-webkit-scrollbar { width: 4px; }
         .active-members-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .active-members-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%); border-radius: 10px; }
-        .active-members-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-        
-        .premium-studio-border { 
-          border: 1px solid rgba(255,255,255,0.15) !important; 
-          border-radius: 28px !important;
-          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important;
-          backdrop-filter: blur(20px);
-        }
-        
-        .premium-confirm-btn {
-          background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%) !important;
-          transition: all 0.3s !important;
-          font-weight: 800 !important;
-          letter-spacing: 1px !important;
-        }
-        
-        .premium-confirm-btn:hover {
-          transform: translateY(-2px) !important;
-          box-shadow: 0 10px 25px -5px rgba(139,92,246,0.4) !important;
-        }
-        
-        .premium-cancel-btn {
-          transition: all 0.3s !important;
-          font-weight: 700 !important;
-        }
-        
-        .premium-cancel-btn:hover {
-          transform: translateY(-2px) !important;
-          background: #374151 !important;
-        }
-        
+        .premium-studio-border { border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 28px !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important; }
+        .premium-confirm-btn { background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%) !important; font-weight: 800 !important; }
+        .premium-confirm-btn:hover { transform: translateY(-2px) !important; }
+        .premium-cancel-btn { font-weight: 700 !important; }
+        .premium-cancel-btn:hover { transform: translateY(-2px) !important; }
         @media (max-width: 992px) {
           .mobile-top-nav { display: flex !important; }
-          .main-responsive-sidebar { 
-            transform: translateX(-100%); 
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .main-responsive-sidebar.mobile-open { 
-            transform: translateX(0);
-            box-shadow: 10px 0 40px rgba(0,0,0,0.5);
-          }
+          .main-responsive-sidebar { transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+          .main-responsive-sidebar.mobile-open { transform: translateX(0); box-shadow: 10px 0 40px rgba(0,0,0,0.5); }
         }
       `}</style>
     </>

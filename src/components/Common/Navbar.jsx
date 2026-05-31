@@ -12,23 +12,20 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   
-  // Real registered users ke liye states
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Aapki fixed email taake aap hamesha pehle number par aaein
   const MY_EMAIL = "iqraaslam1966@gmail.com"; 
 
   useEffect(() => {
     const fetchRealUsers = async () => {
       try {
-        const token = localStorage.getItem('token'); // Agar token storage mein hai
+        const token = localStorage.getItem('token');
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         
-        // Backend se real users fetch kar rahe hain
-        const { data } = await axios.get(`${API}/users/all-users`, config);
+        // ✅ FIXED: /users/all-users → /api/users/all-users
+        const { data } = await axios.get(`${API}/api/users/all-users`, config);
         
-        // Sorting Logic: Iqra hamesha array ke start (Index 0) par rahegi, baki real users uske baad
         const sorted = data.sort((a, b) => {
           if (a.email === MY_EMAIL) return -1;
           if (b.email === MY_EMAIL) return 1;
@@ -59,13 +56,11 @@ export default function Navbar() {
           ✦ SocialApp
         </Link>
 
-        {/* 👥 Center-Left: Real Users List (Navbar display) */}
+        {/* Users List */}
         {user && !loading && (
           <div className="hidden md:flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-100 dark:border-gray-800 max-w-[400px] overflow-x-auto no-scrollbar">
             {registeredUsers.map((u) => {
               const isMe = u.email === MY_EMAIL;
-              
-              // Agar user ki real profile picture database mein hai to woh use hogi, warna random name ui-avatar nahi balki real username initials text avatar banega
               const userAvatar = u.profilePicture 
                 ? `${BASE}${u.profilePicture}` 
                 : `https://ui-avatars.com/api/?name=${u.username}&background=${isMe ? '2563eb' : '4b5563'}&color=fff&size=32`;
@@ -87,10 +82,8 @@ export default function Navbar() {
                       className={`w-full h-full rounded-full object-cover ${isMe ? 'ring-2 ring-blue-500' : ''}`} 
                       alt={u.username} 
                     />
-                    {/* Active User Green dot */}
                     <span className="absolute bottom-0 right-0 block h-1.5 w-1.5 rounded-full bg-green-500 ring-1 ring-white dark:ring-gray-900"></span>
                   </div>
-                  
                   <span className={`text-xs font-semibold max-w-[70px] truncate ${
                     isMe ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
                   }`}>
@@ -103,7 +96,7 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Right side: Navigation Links & Actions */}
+      {/* Right side */}
       <div className="flex items-center gap-4">
         <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium text-sm">Home</Link>
         <Link to="/explore" className="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium text-sm">Explore</Link>

@@ -13,29 +13,27 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   const [likes, setLikes] = useState(post.likes || []);
   const [showComments, setShowComments] = useState(false);
   const [showReactionTray, setShowReactionTray] = useState(false);
-  
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isFavourite, setIsFavourite] = useState(false);
   const [activeReaction, setActiveReaction] = useState(likes.includes(user?._id) ? '❤️' : null);
 
   const handleReactionSelect = async (emojiType) => {
     try {
-      const { data } = await axios.post(`${API}/posts/${post._id}/like`, { reactionType: emojiType });
+      // ✅ FIXED: /posts/ → /api/posts/
+      const { data } = await axios.post(`${API}/api/posts/${post._id}/like`, { reactionType: emojiType });
       setLikes(data.likes);
       setActiveReaction(emojiType);
       setShowReactionTray(false);
-      
-      Swal.fire({ toast: true, position: 'top-end', icon: 'success',
-        title: `${emojiType} Reaction Sync Successfully`, showConfirmButton: false, timer: 1200 });
+      Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `${emojiType} Reaction Sync Successfully`, showConfirmButton: false, timer: 1200 });
     } catch (err) { console.error(err); }
   };
 
   const handleDelete = async () => {
-    const r = await Swal.fire({ title: 'Delete post permanently?', icon: 'warning',
-      showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Delete' });
+    const r = await Swal.fire({ title: 'Delete post permanently?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Delete' });
     if (!r.isConfirmed) return;
     try {
-      await axios.delete(`${API}/posts/${post._id}`);
+      // ✅ FIXED
+      await axios.delete(`${API}/api/posts/${post._id}`);
       onDelete(post._id);
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Post Deleted!', showConfirmButton: false, timer: 1500 });
     } catch (err) { console.error(err); }
@@ -51,7 +49,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     try {
       const fd = new FormData();
       fd.append('text', value);
-      const { data } = await axios.put(`${API}/posts/${post._id}`, fd);
+      // ✅ FIXED
+      const { data } = await axios.put(`${API}/api/posts/${post._id}`, fd);
       onUpdate(data);
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: '✅ Post Updated!', showConfirmButton: false, timer: 1500 });
     } catch { Swal.fire({ icon: 'error', title: 'Failed' }); }
@@ -63,16 +62,12 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       text: 'Check out this post on our platform!',
       url: `${window.location.origin}/posts/${post._id}`
     };
-
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) { console.log("Native share dismiss:", err); }
+      try { await navigator.share(shareData); } catch (err) { console.log("Native share dismiss:", err); }
     } else {
       try {
         await navigator.clipboard.writeText(shareData.url);
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success',
-          title: '🔗 Post Link Copied to Clipboard!', showConfirmButton: false, timer: 1800 });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: '🔗 Post Link Copied to Clipboard!', showConfirmButton: false, timer: 1800 });
       } catch (err) { console.error("Clipboard failure:", err); }
     }
   };
@@ -117,142 +112,64 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     : `https://ui-avatars.com/api/?name=${post.author.username}&background=random&color=fff`;
 
   return (
-    <div className="premium-postcard" style={{ 
-      background: 'var(--card-bg)', 
-      border: '1px solid var(--border)', 
-      borderRadius: 20, 
-      marginBottom: 20, 
-      overflow: 'hidden', 
-      color: 'var(--text)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-    }}>
+    <div className="premium-postcard" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, marginBottom: 20, overflow: 'hidden', color: 'var(--text)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
       
-      {/* Header Pipeline */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px' }}>
         <Link to={`/profile/${post.author._id}`}>
           <img src={avatarUrl} style={{ width: 46, height: 46, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary)', transition: 'transform 0.2s' }} onMouseEnter={e => e.target.style.transform = 'scale(1.08)'} onMouseLeave={e => e.target.style.transform = 'scale(1)'} alt="avatar" />
         </Link>
-        
         <div style={{ flex: 1 }}>
           <Link to={`/profile/${post.author._id}`} style={{ fontWeight: 700, fontSize: 15.5, color: 'var(--text)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'var(--primary)'} onMouseLeave={e => e.target.style.color = 'var(--text)'}>
             {post.author.username}
           </Link>
-          <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>
-            {new Date(post.createdAt).toLocaleString()}
-          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>{new Date(post.createdAt).toLocaleString()}</div>
         </div>
-
-        {/* UTILITY MATRIX */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button 
-            onClick={() => {
-              setIsFavourite(!isFavourite);
-              Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: !isFavourite ? '⭐ Added to Favourites' : 'Removed from Favourites', showConfirmButton: false, timer: 1500 });
-            }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: isFavourite ? '#facc15' : '#6b7280', transition: 'transform 0.2s' }}
-            onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-            onMouseLeave={e => e.target.style.transform = 'scale(1)'}
-          >
-            {isFavourite ? '★' : '☆'}
-          </button>
-
-          <button 
-            onClick={() => {
-              setIsBookmarked(!isBookmarked);
-              Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: !isBookmarked ? '🔖 Post Bookmarked Successfully' : 'Bookmark Removed', showConfirmButton: false, timer: 1500 });
-            }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: isBookmarked ? '#3b82f6' : '#6b7280', transition: 'transform 0.2s' }}
-            onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-            onMouseLeave={e => e.target.style.transform = 'scale(1)'}
-          >
-            {isBookmarked ? '🔖' : '📑'}
-          </button>
-
+          <button onClick={() => { setIsFavourite(!isFavourite); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: !isFavourite ? '⭐ Added to Favourites' : 'Removed from Favourites', showConfirmButton: false, timer: 1500 }); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: isFavourite ? '#facc15' : '#6b7280', transition: 'transform 0.2s' }} onMouseEnter={e => e.target.style.transform = 'scale(1.2)'} onMouseLeave={e => e.target.style.transform = 'scale(1)'}>{isFavourite ? '★' : '☆'}</button>
+          <button onClick={() => { setIsBookmarked(!isBookmarked); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: !isBookmarked ? '🔖 Post Bookmarked Successfully' : 'Bookmark Removed', showConfirmButton: false, timer: 1500 }); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: isBookmarked ? '#3b82f6' : '#6b7280', transition: 'transform 0.2s' }} onMouseEnter={e => e.target.style.transform = 'scale(1.2)'} onMouseLeave={e => e.target.style.transform = 'scale(1)'}>{isBookmarked ? '🔖' : '📑'}</button>
           {user?._id === post.author._id && (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={handleEdit} style={{ padding: '6px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--accent)', color: 'var(--secondary)', fontWeight: 600, fontSize: 12, transition: 'opacity 0.2s' }} onMouseEnter={e => e.target.style.opacity = 0.8} onMouseLeave={e => e.target.style.opacity = 1}>
-                ✏️ Edit
-              </button>
-              <button onClick={handleDelete} style={{ padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#fee2e2', color: '#ef4444', fontWeight: 600, fontSize: 12, transition: 'opacity 0.2s' }} onMouseEnter={e => e.target.style.opacity = 0.8} onMouseLeave={e => e.target.style.opacity = 1}>
-                🗑️
-              </button>
+              <button onClick={handleEdit} style={{ padding: '6px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--accent)', color: 'var(--secondary)', fontWeight: 600, fontSize: 12, transition: 'opacity 0.2s' }} onMouseEnter={e => e.target.style.opacity = 0.8} onMouseLeave={e => e.target.style.opacity = 1}>✏️ Edit</button>
+              <button onClick={handleDelete} style={{ padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#fee2e2', color: '#ef4444', fontWeight: 600, fontSize: 12, transition: 'opacity 0.2s' }} onMouseEnter={e => e.target.style.opacity = 0.8} onMouseLeave={e => e.target.style.opacity = 1}>🗑️</button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Advanced Visual Render Block */}
       {post.text && (
         <div style={{ padding: '0 20px 16px', fontSize: 15, lineHeight: 1.6, color: 'var(--text)' }}>
           {renderAdvancedTextMatrix(post.text)}
         </div>
       )}
 
-      {/* Image Block */}
       {post.image && (
         <div style={{ overflow: 'hidden', background: '#000' }}>
           <img src={`${BASE}${post.image}`} alt="post" style={{ width: '100%', maxHeight: 450, objectFit: 'cover', display: 'block', transition: 'transform 0.5s' }} className="post-media" />
         </div>
       )}
 
-      {/* Real-time Interaction Bar Workspace */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '14px 20px', borderTop: '1px solid var(--border)', position: 'relative', background: 'rgba(255,255,255,0.01)' }}>
-        
-        <div 
-          onMouseEnter={() => setShowReactionTray(true)} 
-          onMouseLeave={() => setShowReactionTray(false)}
-          style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
-        >
-          <button 
-            onClick={() => handleReactionSelect('❤️')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 600, color: activeReaction ? 'var(--primary)' : 'var(--text-muted)' }}
-          >
+        <div onMouseEnter={() => setShowReactionTray(true)} onMouseLeave={() => setShowReactionTray(false)} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <button onClick={() => handleReactionSelect('❤️')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 600, color: activeReaction ? 'var(--primary)' : 'var(--text-muted)' }}>
             <span style={{ fontSize: 18, transition: 'transform 0.2s' }} className="like-icon">{activeReaction || '🤍'}</span> {likes.length}
           </button>
-
           {showReactionTray && (
             <div style={{ position: 'absolute', bottom: '32px', left: '-10px', background: '#18181b', border: '1px solid var(--border)', borderRadius: '24px', padding: '8px 16px', display: 'flex', gap: '14px', zIndex: 999, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', animation: 'popTray 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
               {['❤️'].map((emo) => (
-                <span 
-                  key={emo} 
-                  onClick={() => handleReactionSelect(emo)} 
-                  style={{ fontSize: '22px', cursor: 'pointer', transition: 'transform 0.15s', display: 'inline-block' }}
-                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.35) translateY(-4px)'}
-                  onMouseLeave={(e) => e.target.style.transform = 'scale(1) translateY(0)'}
-                >
-                  {emo}
-                </span>
+                <span key={emo} onClick={() => handleReactionSelect(emo)} style={{ fontSize: '22px', cursor: 'pointer', transition: 'transform 0.15s', display: 'inline-block' }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.35) translateY(-4px)'} onMouseLeave={(e) => e.target.style.transform = 'scale(1) translateY(0)'}>{emo}</span>
               ))}
             </div>
           )}
         </div>
-
-        <button onClick={() => setShowComments(p => !p)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 600, color: showComments ? 'var(--primary)' : 'var(--text-muted)' }}>
-          💬 Comment
-        </button>
-
-        <button 
-          onClick={handleNativeShare}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 700, color: '#38bdf8', transition: 'transform 0.2s' }}
-          onMouseEnter={(e) => e.target.style.transform = 'translateX(3px)'}
-          onMouseLeave={(e) => e.target.style.transform = 'translateX(0)'}
-        >
-          🔗 Share
-        </button>
+        <button onClick={() => setShowComments(p => !p)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 600, color: showComments ? 'var(--primary)' : 'var(--text-muted)' }}>💬 Comment</button>
+        <button onClick={handleNativeShare} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 700, color: '#38bdf8', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.target.style.transform = 'translateX(3px)'} onMouseLeave={(e) => e.target.style.transform = 'translateX(0)'}>🔗 Share</button>
       </div>
 
       {showComments && <CommentSection postId={post._id} />}
 
       <style>{`
-        .premium-postcard:hover {
-          transform: translateY(-5px) scale(1.01);
-          box-shadow: 0 0 30px rgba(244, 63, 94, 0.25), 0 10px 20px rgba(0, 0, 0, 0.4); 
-          border-color: #f43f5e !important;
-        }
-        .premium-postcard {
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-        }
+        .premium-postcard:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 0 30px rgba(244, 63, 94, 0.25), 0 10px 20px rgba(0, 0, 0, 0.4); border-color: #f43f5e !important; }
+        .premium-postcard { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important; }
       `}</style>
     </div>
   );

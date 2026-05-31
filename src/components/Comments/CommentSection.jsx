@@ -12,7 +12,8 @@ export default function CommentSection({ postId }) {
 
   const fetchComments = async () => {
     try {
-      const { data } = await axios.get(`${API}/posts/${postId}/comments`);
+      // ✅ FIXED: /posts/ → /api/posts/
+      const { data } = await axios.get(`${API}/api/posts/${postId}/comments`);
       setComments(data || []);
     } catch (err) { console.error(err); }
   };
@@ -23,7 +24,8 @@ export default function CommentSection({ postId }) {
     e.preventDefault();
     if (!newComment.trim()) return;
     try {
-      const { data } = await axios.post(`${API}/posts/${postId}/comments`, { text: newComment });
+      // ✅ FIXED
+      const { data } = await axios.post(`${API}/api/posts/${postId}/comments`, { text: newComment });
       setComments(prev => [data, ...prev]);
       setNewComment('');
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Comment Posted!', showConfirmButton: false, timer: 1200 });
@@ -37,7 +39,8 @@ export default function CommentSection({ postId }) {
     });
     if (!updatedText || updatedText.trim() === currentText) return;
     try {
-      const { data } = await axios.put(`${API}/posts/${postId}/comments/${commentId}`, { text: updatedText });
+      // ✅ FIXED
+      const { data } = await axios.put(`${API}/api/posts/${postId}/comments/${commentId}`, { text: updatedText });
       setComments(prev => prev.map(c => c._id === commentId ? { ...c, text: data.text } : c));
     } catch (err) { console.error(err); }
   };
@@ -46,7 +49,8 @@ export default function CommentSection({ postId }) {
     const confirm = await Swal.fire({ title: 'Delete comment?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' });
     if (!confirm.isConfirmed) return;
     try {
-      await axios.delete(`${API}/posts/${postId}/comments/${commentId}`);
+      // ✅ FIXED
+      await axios.delete(`${API}/api/posts/${postId}/comments/${commentId}`);
       setComments(prev => prev.filter(c => c._id !== commentId));
     } catch (err) { console.error(err); }
   };
