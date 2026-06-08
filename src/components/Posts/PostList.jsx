@@ -9,10 +9,17 @@ export default function PostList({ userId, newPost }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const url = userId ? `${API}/users/${userId}/posts` : `${API}/posts`;
-    axios.get(url).then(res => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
-  }, [userId]);
+useEffect(() => {
+  const url = userId
+    ? `${API}/api/users/${userId}/posts`
+    : `${API}/api/posts`;
+
+  axios
+    .get(url)
+    .then(res => setPosts(res.data))
+    .catch(console.error)
+    .finally(() => setLoading(false));
+}, [userId]);
 
   useEffect(() => {
     if (newPost) setPosts(p => [newPost, ...p]);
